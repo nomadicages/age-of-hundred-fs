@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Age of Hundred</string>
+    <string name="title_activity_main">Age of Hundred</string>
+    <string name="package_name">com.plizm.ageofhundred</string>
+    <string name="custom_url_scheme">com.plizm.ageofhundred</string>
+</resources>
