@@ -148,25 +148,25 @@ const BirthInput: React.FC<Props> = ({ onComplete, initialDate, isEditing, lang 
         {/* BIRTHDATE Section */}
         <div className="space-y-2">
           <div className="flex justify-between items-center px-1">
-            <label className="text-[11px] font-bold flex items-center gap-1.5 text-white uppercase tracking-[0.2em]">
-              <Calendar size={12} /> {t.birthdate}
+            <label className="text-[16px] font-light flex items-center gap-1.5 text-white uppercase tracking-[0.1em]">
+              <Calendar size={16} /> {t.birthdate}
             </label>
             <button type="button" onClick={() => setIsCalendarOpen(true)} className="p-1.5 rounded-lg border transition-all hover:bg-white/10 border-white/10">
-              <Calendar size={13} className="text-white" />
+              <Calendar size={16} className="text-white" />
             </button>
           </div>
           <div className="grid grid-cols-3 gap-0 p-0.5 border rounded-[1.25rem] bg-black/40 border-white/20 overflow-hidden">
             <div className="flex flex-col items-center">
-              <span className="text-[8px] font-bold text-white/90 mt-3 uppercase tracking-widest">YEAR</span>
+              <span className="text-[11px] font-light text-white/90 mt-3 uppercase tracking-widest">YEAR</span>
               <WheelPicker options={years} value={year} onChange={setYear} itemHeight={pickerItemHeight} />
             </div>
             <div className="flex flex-col items-center border-x border-white/10">
-              <span className="text-[8px] font-bold text-white/90 mt-3 uppercase tracking-widest">MONTH</span>
+              <span className="text-[11px] font-light text-white/90 mt-3 uppercase tracking-widest">MONTH</span>
               <WheelPicker options={availableMonths} value={month} onChange={setMonth} itemHeight={pickerItemHeight} />
 
             </div>
             <div className="flex flex-col items-center">
-              <span className="text-[8px] font-bold text-white/90 mt-3 uppercase tracking-widest">DAY</span>
+              <span className="text-[11px] font-light text-white/90 mt-3 uppercase tracking-widest">DAY</span>
               <WheelPicker options={availableDays} value={day} onChange={setDay} itemHeight={pickerItemHeight} />
             </div>
           </div>
@@ -174,35 +174,52 @@ const BirthInput: React.FC<Props> = ({ onComplete, initialDate, isEditing, lang 
 
         {/* BIRTH TIME Section */}
         <div className="space-y-2">
-          <label className="text-[11px] font-bold ml-1 flex items-center gap-1.5 text-white uppercase tracking-[0.2em]">
-            <Clock size={12} /> {t.birthTime}
+          <label className="text-[16px] font-light ml-1 flex items-center gap-1.5 text-white uppercase tracking-[0.1em]">
+            <Clock size={16} /> {t.birthTime}
           </label>
           <div className="grid grid-cols-3 gap-0 p-0.5 border rounded-[1.25rem] bg-black/40 border-white/20 overflow-hidden">
             <div className="flex flex-col items-center">
-              <span className="text-[8px] font-bold text-white/90 mt-3 uppercase tracking-widest">HR</span>
+              <span className="text-[11px] font-light text-white/90 mt-3 uppercase tracking-widest">HR</span>
               <WheelPicker options={hoursList} value={hour} onChange={setHour} itemHeight={pickerItemHeight} />
             </div>
             <div className="flex flex-col items-center border-x border-white/10">
-              <span className="text-[8px] font-bold text-white/90 mt-3 uppercase tracking-widest">MIN</span>
+              <span className="text-[11px] font-light text-white/90 mt-3 uppercase tracking-widest">MIN</span>
               <WheelPicker options={minutesList.map(m => m.toString().padStart(2, '0'))} value={minute.toString().padStart(2, '0')} onChange={(val) => setMinute(parseInt(val))} itemHeight={pickerItemHeight} />
             </div>
             <div className="flex flex-col items-center">
-              <span className="text-[8px] font-bold text-white/90 mt-3 uppercase tracking-widest">AM/PM</span>
+              <span className="text-[11px] font-light text-white/90 mt-3 uppercase tracking-widest">AM/PM</span>
               <WheelPicker options={[t.am, t.pm]} value={period} onChange={setPeriod} itemHeight={pickerItemHeight} />
             </div>
           </div>
         </div>
 
-        {/* Submit Button - font is medium (not bold), box length increased, font size +2 */}
-        <button type="submit" className="w-full font-medium py-5 sm:py-7 rounded-[1.5rem] transition-all flex items-center justify-center gap-3 bg-gradient-to-r from-yellow-300 to-lime-500 text-black hover:opacity-90 active:scale-95 mt-8 shadow-lg shadow-lime-500/10">
-          <span className="text-xl sm:text-2xl lg:text-3xl uppercase tracking-[0.1em] font-medium">
-            {isEditing ? t.save : t.start}
-          </span> 
-          {isEditing ? (
-            <Save size={20} strokeWidth={2.5} />
-          ) : (
-            <ChevronRight size={24} strokeWidth={2.5} />
-          )}
+        {/* Submit Button - 텍스트 그룹화 및 중앙 정렬 개선 */}
+        <button 
+          type="submit" 
+          className="w-full py-3.5 sm:py-7 rounded-[1.5rem] transition-all flex items-center justify-center bg-gradient-to-r from-yellow-300 to-lime-500 text-black hover:opacity-90 active:scale-95 mt-8 shadow-lg shadow-lime-500/10"
+        >
+          <div className="flex items-center justify-center gap-3 max-w-[95%] px-4 font-medium">
+            <span 
+              className={`text-xl sm:text-2xl lg:text-3xl font-medium leading-tight text-center ${
+                lang === 'ja' 
+                  ? 'tracking-tight' 
+                  : 'uppercase tracking-[0.1em]'
+              }`}
+              style={{ 
+                // 일본어일 때만 Noto Sans JP 적용, 가중치는 시스템 설정인 500(Medium)을 따름
+                fontFamily: lang === 'ja' ? "'Noto Sans JP', sans-serif" : "inherit"
+              }}
+            >
+              {isEditing ? t.save : t.start}
+            </span> 
+            <div className="flex-shrink-0">
+              {isEditing ? (
+                <Save size={20} strokeWidth={2.5} /> /* 아이콘 굵기도 다시 원래대로(2) */
+              ) : (
+                <ChevronRight size={24} strokeWidth={2.5} />
+              )}
+            </div>
+          </div>
         </button>
       </form>
       <CalendarLayer isOpen={isCalendarOpen} onClose={() => setIsCalendarOpen(false)} selectedDate={{ year, month, day }} onSelect={(y, m, d) => { setYear(y); setMonth(m); setDay(d); }} lang={lang} disableFuture={true} disablePast={false}      />

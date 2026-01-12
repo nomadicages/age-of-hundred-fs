@@ -58,23 +58,24 @@ const WheelPicker: React.FC<WheelPickerProps> = ({ options, value, onChange }) =
   const lastWheelTime = useRef(0);
 
   return (
-    <div className="relative h-[132px] w-full flex flex-col items-center overflow-hidden">
-      <div className="absolute top-1/2 -translate-y-1/2 left-0 right-0 h-[44px] z-0 border-y border-white/20 bg-white/5 pointer-events-none" />
+    <div className="relative w-full flex flex-col items-center overflow-hidden group" style={{ height: itemHeight * 3 }}>
+      <div className="absolute top-1/2 -translate-y-1/2 left-0 right-0 z-0 transition-colors border-y border-white/20 bg-white/5 pointer-events-none" style={{ height: itemHeight }} />
       <div 
         ref={scrollRef}
         onScroll={handleScroll}
         onWheel={handleWheel}
-        onScrollEnd={() => (isScrollingRef.current = false)}
         className="w-full h-full overflow-y-auto snap-y snap-mandatory no-scrollbar relative z-10"
-        style={{ padding: '44px 0' }}
+        style={{ padding: `${itemHeight}px 0` }}
       >
         {options.map((option, i) => (
-          <div key={i} className={`h-[44px] flex items-center justify-center snap-center text-sm font-medium font-lexend tabular-nums transition-all duration-300 text-white ${option === value ? 'opacity-100 scale-125' : 'opacity-85 scale-90 blur-[0.1px]'}`} style={{ scrollSnapStop: 'always', scrollSnapAlign: 'center' }}>
+          <div key={i} className={`flex items-center justify-center snap-center text-sm sm:text-base font-semibold font-lexend tabular-nums transition-all duration-300 text-white ${option === value ? 'opacity-100 scale-125' : 'opacity-85 scale-90 blur-[0.1px]'}`} style={{ height: itemHeight, scrollSnapStop: 'always', scrollSnapAlign: 'center' }}>
             {option}
           </div>
         ))}
       </div>
-      <div className="absolute inset-0 pointer-events-none z-20 bg-gradient-to-b from-[#111] via-transparent to-[#111] opacity-90" />
+      
+      {/* [수정] 오버레이 영역에 rounded-[inherit]를 추가하여 부모의 라운드 값을 상속받게 함 */}
+      <div className="absolute inset-0 pointer-events-none z-20 bg-gradient-to-b from-black/80 via-transparent to-black/80 opacity-90 rounded-[inherit]" />
     </div>
   );
 };
@@ -195,46 +196,55 @@ const AnniversaryModal: React.FC<Props> = ({ isOpen, onClose, onAdd, initialData
     <>
       <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-black/60 backdrop-blur-sm">
         <div className="relative w-full max-w-md border rounded-[2.5rem] p-6 sm:p-8 shadow-2xl bg-[#111] border-white/10 flex flex-col max-h-[90vh] overflow-y-auto no-scrollbar">
-          <button onClick={onClose} className="absolute top-6 right-6 transition-colors text-white/40 hover:text-red-400 p-2"><X size={20} /></button>
+          <button onClick={onClose} className="absolute top-4 right-4 transition-colors text-white/40 hover:text-red-400 p-2"><X size={30} /></button>
           <h2 className="text-2xl font-medium mb-6 text-white font-serif">{initialData ? t.modalTitleEdit : t.modalTitleAdd}</h2>
           
           <div className="flex p-1 rounded-2xl mb-6 border bg-white/5 border-white/5">
-            <button type="button" onClick={() => setMode('date')} className={`flex-1 py-2 rounded-xl text-[11px] font-medium flex items-center justify-center gap-2 transition-all ${mode === 'date' ? 'bg-white text-black' : 'text-white/40'}`}>
-              <Calendar size={14} /> {t.modalDateMode}
+            <button type="button" onClick={() => setMode('date')} className={`flex-1 py-2 rounded-xl text-[16px] font-medium flex items-center justify-center gap-2 transition-all ${mode === 'date' ? 'bg-white text-black' : 'text-white/40'}`}>
+              <Calendar size={16} /> {t.modalDateMode}
             </button>
-            <button type="button" onClick={() => setMode('duration')} className={`flex-1 py-2 rounded-xl text-[11px] font-medium flex items-center justify-center gap-2 transition-all ${mode === 'duration' ? 'bg-white text-black' : 'text-white/40'}`}>
-              <Clock size={14} /> {t.modalDurationMode}
+            <button type="button" onClick={() => setMode('duration')} className={`flex-1 py-2 rounded-xl text-[16px] font-medium flex items-center justify-center gap-2 transition-all ${mode === 'duration' ? 'bg-white text-black' : 'text-white/40'}`}>
+              <Clock size={16} /> {t.modalDurationMode}
             </button>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5 sm:space-y-6 flex flex-col">
             <div className="space-y-2">
-              <label className="text-[10px] font-medium ml-1 text-white/50 tracking-widest uppercase">{t.modalDdayName}</label>
-              <input type="text" placeholder={t.modalDdayNamePlaceholder} required value={name} onChange={(e) => setName(e.target.value)} className="w-full rounded-2xl px-5 py-3.5 text-base focus:outline-none focus:ring-2 transition-all bg-white/5 border-white/10 text-white font-medium" />
+              <label className="text-[16px] font-light ml-1 text-white/80 tracking-widest uppercase tracking-[0.1em]">{t.modalDdayName}</label>
+              <input type="text" placeholder={t.modalDdayNamePlaceholder} required value={name} onChange={(e) => setName(e.target.value)} className="w-full rounded-2xl px-5 py-3.5 text-base focus:outline-none focus:ring-2 transition-all bg-white/5 border-white/10 text-white font-light" />
             </div>
 
             <div className="min-h-[160px] relative">
               {mode === 'date' && (
                 <div className="space-y-3">
                   <div className="flex justify-between items-center px-1">
-                    <label className="text-[10px] font-medium text-white/50 tracking-widest uppercase">{t.modalTargetDate}</label>
-                    <button type="button" onClick={() => setIsCalendarOpen(true)} className="p-1.5 rounded-xl border transition-all hover:bg-white/10 border-white/10"><Calendar size={14} className="text-white/60" /></button>
+                    <label className="text-[16px] font-light text-white/80 tracking-widest uppercase tracking-[0.1em]" >{t.modalTargetDate}</label>
+                    <button type="button" onClick={() => setIsCalendarOpen(true)} className="p-1.5 rounded-xl border transition-all hover:bg-white/10 border-white/10"><Calendar size={16} className="text-white/60" /></button>
                   </div>
-                  <div className="grid grid-cols-3 gap-1 p-1 border rounded-[2rem] bg-white/5 border-white/10">
-                    <WheelPicker options={availableYears} value={year} onChange={setYear} />
-                    <WheelPicker options={availableMonths} value={month} onChange={setMonth} />
-                    <WheelPicker options={availableDays.length > 0 ? availableDays : [day]} value={day} onChange={setDay} />
+                  <div className="grid grid-cols-3 gap-0 p-0.5 border rounded-[1.25rem] bg-black border-white/20 overflow-hidden isolate">
+                    <div className="flex flex-col items-center">
+                      <span className="text-[11px] font-light text-white/90 mt-3 uppercase tracking-widest text-center">YEAR</span>
+                      <WheelPicker options={availableYears} value={year} onChange={setYear} />
+                    </div>
+                    <div className="flex flex-col items-center border-x border-white/10">
+                      <span className="text-[11px] font-light text-white/90 mt-3 uppercase tracking-widest text-center">MONTH</span>
+                      <WheelPicker options={availableMonths} value={month} onChange={setMonth} />
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <span className="text-[11px] font-light text-white/90 mt-3 uppercase tracking-widest text-center">DAY</span>
+                      <WheelPicker options={availableDays.length > 0 ? availableDays : [day]} value={day} onChange={setDay} />
+                    </div>
                   </div>
                 </div>
               )}
               {mode === 'duration' && (
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <label className="text-[10px] font-medium ml-1 text-white/50 tracking-widest uppercase">{t.modalAddMonths}</label>
+                    <label className="text-[16px] font-light ml-1 text-white/70 tracking-widest uppercase">{t.modalAddMonths}</label>
                     <input type="number" min="0" value={durMonths} onChange={(e) => setDurMonths(e.target.value)} className="w-full rounded-2xl px-5 py-3.5 text-base font-lexend font-medium focus:outline-none focus:ring-2 transition-all bg-white/5 border-white/10 text-white" />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-[10px] font-medium ml-1 text-white/50 tracking-widest uppercase">{t.modalAddDays}</label>
+                    <label className="text-[16px] font-light ml-1 text-white/70 tracking-widest uppercase">{t.modalAddDays}</label>
                     <input type="number" min="0" value={durDays} onChange={(e) => setDurDays(e.target.value)} className="w-full rounded-2xl px-5 py-3.5 text-base font-lexend font-medium focus:outline-none focus:ring-2 transition-all bg-white/5 border-white/10 text-white" />
                   </div>
                 </div>
@@ -250,14 +260,24 @@ const AnniversaryModal: React.FC<Props> = ({ isOpen, onClose, onAdd, initialData
                     <span className="text-[9px] text-white/40 tracking-widest uppercase">{t.modalAlarmDesc}</span>
                   </div>
                 </div>
-                <button type="button" onClick={() => setAlarmEnabled(!alarmEnabled)} className={`w-11 h-6 rounded-full relative transition-colors ${alarmEnabled ? 'bg-lime-500' : 'bg-white/10'}`}>
-                  <div className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-all ${alarmEnabled ? 'left-6' : 'left-1'}`} />
+                <button
+                  type="button"
+                  onClick={() => setAlarmEnabled(!alarmEnabled)}
+                  className={`relative inline-flex h-5 w-10 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none ${
+                    alarmEnabled ? 'bg-lime-500' : 'bg-white/10'
+                  }`}
+                >
+                  <span
+                    className={`pointer-events-none inline-block h-4 w-4 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                      alarmEnabled ? 'translate-x-5' : 'translate-x-0'
+                    }`}
+                  />
                 </button>
               </div>
 
               {alarmEnabled && (
                 <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-300">
-                  <label className="text-[10px] font-medium ml-1 text-white/40 tracking-widest uppercase">{t.modalAlarmSound}</label>
+                  <label className="text-[16px] font-light ml-1 text-white/70 tracking-widest uppercase">{t.modalAlarmSound}</label>
                   <div className="flex flex-col gap-2">
                     {ALARM_SOUNDS.map((sound) => (
                       <div 

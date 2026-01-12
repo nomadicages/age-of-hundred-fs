@@ -18,6 +18,8 @@ import { loadNativeAds, NativeAdData } from './nativeAdService';
 const UNITS: TimeUnit[] = ['years', 'months', 'days', 'hours', 'minutes', 'seconds'];
 
 const App: React.FC = () => {
+  // 테스트를 위해 데이터를 한 번 지우고 싶을 때 아래 주석을 해제하고 저장하세요.
+  useEffect(() => { localStorage.clear(); }, []); 
   const [showSplash, setShowSplash] = useState(true);
   const [isStandalone, setIsStandalone] = useState(false);
   const [lang, setLang] = useState<Language>(() => {
@@ -26,6 +28,14 @@ const App: React.FC = () => {
   });
   const [showLangMenu, setShowLangMenu] = useState(false);
   
+  // 1. 초기 언어 선택 팝업 상태 추가
+  const [showInitialLang, setShowInitialLang] = useState(() => {
+    const savedBirthDate = localStorage.getItem('centurion_birthdate');
+    const langSelected = localStorage.getItem('centurion_lang_selected');
+    // 생일 정보가 없고, 언어 선택을 완료했다는 플래그가 없으면 팝업을 띄움
+    return !savedBirthDate && !langSelected;
+  });
+
   // Helper to get a deterministic "Insight of the Day" from local pool
   const getDailyLocalInsight = useCallback((currentLang: Language) => {
     const today = new Date();
@@ -55,6 +65,13 @@ const App: React.FC = () => {
     if (typeof getDailyLocalInsight === 'function') {
       setAiInsight(getDailyLocalInsight(newLang));
     }
+  };
+
+  // 2. 초기 언어 선택 처리 함수 추가
+  const selectInitialLang = (newLang: Language) => {
+    changeLang(newLang);
+    localStorage.setItem('centurion_lang_selected', 'true');
+    setShowInitialLang(false);
   };
 
   const initializeAdMob = async () => {
@@ -396,6 +413,35 @@ const App: React.FC = () => {
     <>
       {showSplash && <SplashScreen onStarted={() => setShowSplash(false)} />}
       <div className={`transition-opacity duration-700 ${showSplash ? 'opacity-0' : 'opacity-100'}`}>
+
+        
+        {showInitialLang && (
+          <div className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/95 backdrop-blur-2xl px-6">
+            <div className="w-full max-w-sm p-8 rounded-[3rem] bg-black border border-white/10 shadow-2xl animate-in fade-in zoom-in duration-500">
+              <div className="mb-8 text-center">
+                  <div className="w-16 h-16 bg-white/5 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-white/10">
+                    <Globe className="text-white/60" size={32} />
+                  </div>
+                  <h2 className="text-2xl font-serif font-black text-white tracking-tight">Select Language</h2>
+                  <p className="text-white/40 text-sm mt-2 font-medium tracking-wide">Choose your preferred language</p>
+              </div>
+              <div className="grid gap-3">
+                  {languages.map((language) => (
+                    <button
+                      key={language.code}
+                      onClick={() => selectInitialLang(language.code)}
+                      className="w-full py-4 rounded-2xl bg-white/5 hover:bg-white/15 border border-white/5 hover:border-white/20 text-white transition-all flex items-center justify-between px-6 active:scale-95 group"
+                    >
+                      <span className="text-lg font-bold group-hover:scale-105 transition-transform">{language.nativeName}</span>
+                      <span className="text-[10px] text-white/30 font-lexend tracking-widest uppercase font-black">{language.name}</span>
+                    </button>
+                  ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+
         {(!birthDate || isEditing) ? (
           <div className="relative h-[100dvh] w-screen flex items-start sm:items-center justify-center bg-black px-4 pt-safe pb-safe overflow-y-auto no-scrollbar">
             <VisualBackground percentage={100 - (progress?.percentage || 0)} theme="standard" />
@@ -403,53 +449,56 @@ const App: React.FC = () => {
               
            
 
-              <div className="absolute top-6 right-6 flex items-center gap-3 z-[300]">
+              <div className="absolute top-3 right-3 flex items-center gap-1 z-[300]">
                 <div className="relative z-[300]">
-                  <button 
-                    onClick={() => setShowLangMenu(!showLangMenu)} 
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/15 transition-all text-white/70 hover:text-white backdrop-blur-md relative z-[300]"
-                  >
-                    <Globe size={14} />
-                    <span className="text-[10px] font-black tracking-widest uppercase">
-                      {languages.find(l => l.code === lang)?.code.toUpperCase() || 'EN'}
-                    </span>
-                  </button>
-                  {showLangMenu && (
-                    <>
+                <button 
+                  onClick={() => setShowLangMenu(!showLangMenu)} 
+                  className={`flex items-center gap-2 px-4 py-2 rounded-xl border border-white/10 transition-all backdrop-blur-md relative z-[301] ${
+                    showLangMenu ? 'bg-white text-black border-white' : 'bg-white/5 text-white/70 hover:bg-white/15'
+                  }`}
+                >
+                  <Globe size={16} />
+                  <span className="text-[11px] font-black tracking-widest uppercase">
+                    {languages.find(l => l.code === lang)?.code.toUpperCase() || 'EN'}
+                  </span>
+                </button>
+
+                
+                {showLangMenu && (
                       <div 
-                        className="fixed inset-0 z-[250]" 
+                        className="fixed inset-0 z-[250] bg-black/70 backdrop-blur-md animate-in fade-in duration-300"
                         onClick={() => setShowLangMenu(false)}
                       />
-                      <div className="absolute top-full right-0 mt-2 w-48 rounded-xl border border-white/10 bg-black/90 backdrop-blur-xl shadow-2xl z-[300]">
+                    )}
+
+                {showLangMenu && (
+                      <div className="absolute top-full right-0 mt-3 w-48 rounded-2xl border border-white/10 bg-black/90 backdrop-blur-xl shadow-2xl z-[301] overflow-hidden animate-in fade-in slide-in-from-top-2 duration-300">
                         <div className="overflow-y-auto max-h-[calc(100vh-200px)]">
                           {languages.map((language) => (
                             <button
                               key={language.code}
                               onClick={() => changeLang(language.code)}
-                              className={`w-full px-4 py-3 text-left transition-all flex-shrink-0 ${
+                              className={`w-full px-5 py-4 text-left transition-all flex items-center justify-between ${
                                 lang === language.code 
                                   ? 'bg-white/20 text-white' 
                                   : 'text-white/70 hover:bg-white/10 hover:text-white'
                               }`}
                             >
-                              <div className="flex items-center justify-between">
-                                <span className="text-sm font-medium">{language.nativeName}</span>
-                                <span className="text-xs text-white/50">{language.name}</span>
-                              </div>
+                              <span className="text-sm font-medium">{language.nativeName}</span>
+                              <span className="text-[10px] text-white/40 uppercase">{language.code}</span>
                             </button>
                           ))}
                         </div>
                       </div>
-                    </>
-                  )}
-                </div>
+                    )}
+                  </div>
                 {birthDate && (
                   <button onClick={() => setIsEditing(false)} className="p-2 rounded-full transition-all text-white/30 hover:text-white hover:bg-white/10 active:scale-90">
                     <X size={24} strokeWidth={2} />
                   </button>
                 )}
               </div>
-              <div className="mb-4 sm:mb-6 mt-6 sm:mt-4">
+              <div className="mb-4 sm:mb-6 mt-10 sm:mt-10">
                 <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif font-black text-white tracking-tight leading-tight">{t.title}</h1>
               </div>
               <div className="mb-8 sm:mb-10">
@@ -533,7 +582,7 @@ const App: React.FC = () => {
             <footer className="relative z-20 w-full flex justify-center pb-6 sm:pb-10 px-4 sm:px-6 flex-none max-w-5xl mx-auto mb-safe">
               <div className="w-full backdrop-blur-3xl border rounded-[2rem] sm:rounded-[2.5rem] p-4 sm:p-6 shadow-2xl bg-white/5 border-white/10">
                 <div className="flex items-center justify-between mb-4 px-1 sm:px-2">
-                  <h3 className="flex items-center gap-2 text-[10px] sm:text-xs font-black tracking-widest text-white/60"><Bell size={14} className="opacity-50" />{t.ddayList}</h3>
+                  <h3 className="flex items-center gap-2 text-[14px] sm:text-xs font-regular tracking-widest text-white/60"><Bell size={16} className="opacity-50" />{t.ddayList}</h3>
                   <button onClick={() => { setEditingAnniversary(null); setIsModalOpen(true); }} className="p-1.5 sm:p-2 rounded-xl transition-all shadow-lg shadow-lime-500/20 bg-gradient-to-r from-yellow-300 to-lime-500 text-black hover:scale-110 active:scale-95"><Plus size={16} /></button>
                 </div>
                 <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-1 scroll-smooth no-scrollbar">
